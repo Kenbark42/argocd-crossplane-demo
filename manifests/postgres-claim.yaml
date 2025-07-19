@@ -1,0 +1,15 @@
+apiVersion: demo.io/v1alpha1
+kind: PostgreSQL
+metadata:
+  name: demo-postgres
+  namespace: demo
+spec:
+  parameters:
+    region: us-central1
+    size: small
+    dbName: demo-database
+  compositionRef:
+    name: postgres-db
+  writeConnectionSecretsToRef:
+    name: postgres-connection
+    namespace: demo

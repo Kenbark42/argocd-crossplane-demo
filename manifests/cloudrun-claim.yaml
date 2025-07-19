@@ -1,0 +1,15 @@
+apiVersion: demo.io/v1alpha1
+kind: CloudRunApp
+metadata:
+  name: demo-app
+  namespace: demo
+spec:
+  parameters:
+    region: us-central1
+    image: gcr.io/cloudrun/hello  # Temporary - will be updated with actual image
+    databaseUrl: "postgresql://username:password@localhost:5432/demo-database"
+  compositionRef:
+    name: cloud-run-app
+  writeConnectionSecretsToRef:
+    name: cloudrun-connection
+    namespace: demo

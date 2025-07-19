@@ -1,0 +1,110 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: postgres-db
+  labels:
+    provider: gcp
+    service: cloudsql
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: demo.io/v1alpha1
+    kind: XPostgreSQL
+  resources:
+  - name: cloudsql-instance
+    base:
+      apiVersion: sql.gcp.crossplane.io/v1beta1
+      kind: DatabaseInstance
+      spec:
+        forProvider:
+          databaseVersion: POSTGRES_13
+          region: us-central1
+          settings:
+            tier: db-f1-micro
+            availabilityType: ZONAL
+            diskSize: 20
+            diskType: PD_SSD
+            backupConfiguration:
+              enabled: true
+              pointInTimeRecoveryEnabled: true
+            ipConfiguration:
+              authorizedNetworks:
+                - value: "0.0.0.0/0"
+              ipv4Enabled: true
+        writeConnectionSecretsToRef:
+          namespace: crossplane-system
+    patches:
+    - fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+    - fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+    - fromFieldPath: spec.parameters.size
+      toFieldPath: spec.forProvider.settings.tier
+      transforms:
+      - type: map
+        map:
+          small: db-f1-micro
+          medium: db-n1-standard-1
+          large: db-n1-standard-2
+    connectionDetails:
+    - fromConnectionSecretKey: endpoint
+    - fromConnectionSecretKey: port
+    - fromConnectionSecretKey: username
+    - fromConnectionSecretKey: password
+  - name: database
+    base:
+      apiVersion: sql.gcp.crossplane.io/v1alpha1
+      kind: Database
+      spec:
+        forProvider:
+          instanceSelector:
+            matchControllerRef: true
+    patches:
+    - fromFieldPath: spec.parameters.dbName
+      toFieldPath: spec.forProvider.name
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xpostgresqls.demo.io
+spec:
+  group: demo.io
+  names:
+    kind: XPostgreSQL
+    plural: xpostgresqls
+  claimNames:
+    kind: PostgreSQL
+    plural: postgresqls
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  region:
+                    type: string
+                    default: us-central1
+                  size:
+                    type: string
+                    enum: ["small", "medium", "large"]
+                    default: small
+                  dbName:
+                    type: string
+                    default: demo-db
+                required:
+                - region
+            required:
+            - parameters
+          status:
+            type: object
+            properties:
+              ready:
+                type: boolean
