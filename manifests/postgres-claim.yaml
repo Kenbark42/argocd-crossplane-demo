@@ -10,6 +10,5 @@ spec:
     dbName: demo-database
   compositionRef:
     name: postgres-db
-  writeConnectionSecretsToRef:
+  writeConnectionSecretToRef:
     name: postgres-connection
-    namespace: demo
