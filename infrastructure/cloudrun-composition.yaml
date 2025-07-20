@@ -32,31 +32,10 @@ spec:
                 ports:
                 - containerPort: 8080
                 env:
-                - name: DB_HOST
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-connection
-                      key: host
-                - name: DB_PORT
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-connection
-                      key: port
-                - name: DB_NAME
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-connection
-                      key: database
-                - name: DB_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-connection
-                      key: username
-                - name: DB_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-connection
-                      key: password
+                - name: GOOGLE_CLOUD_PROJECT
+                  value: darkfoo42
+                - name: NODE_ENV
+                  value: production
                 resources:
                 - limits:
                     cpu: "1000m"
@@ -73,8 +52,6 @@ spec:
       toFieldPath: spec.forProvider.location
     - fromFieldPath: spec.parameters.image
       toFieldPath: spec.forProvider.template[0].spec[0].containers[0].image
-    - fromFieldPath: spec.parameters.dbSecretName
-      toFieldPath: spec.forProvider.template[0].spec[0].containers[0].env[0].valueFrom.secretKeyRef.name
     connectionDetails:
     - fromConnectionSecretKey: url
 ---
