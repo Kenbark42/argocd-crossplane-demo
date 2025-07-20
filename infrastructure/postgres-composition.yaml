@@ -1,4 +1,50 @@
 apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xpostgresqls.demo.io
+spec:
+  group: demo.io
+  names:
+    kind: XPostgreSQL
+    plural: xpostgresqls
+  claimNames:
+    kind: PostgreSQL
+    plural: postgresqls
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  region:
+                    type: string
+                    default: us-central1
+                  size:
+                    type: string
+                    enum: ["small", "medium", "large"]
+                    default: small
+                  dbName:
+                    type: string
+                    default: demo-db
+                required:
+                - region
+            required:
+            - parameters
+          status:
+            type: object
+            properties:
+              ready:
+                type: boolean
+---
+apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
   name: postgres-db
