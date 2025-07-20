@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: demo-infrastructure
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # Deploy infrastructure before claims
 spec:
   project: default
   source:
@@ -14,7 +16,53 @@ spec:
     namespace: crossplane-system
   syncPolicy:
     automated:
-      prune: true
+      prune: false  # Critical: Don't auto-prune infrastructure
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - ServerSideApply=true
+    - RespectIgnoreDifferences=true
+    - Replace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+  - group: apiextensions.crossplane.io
+    kind: Composition
+    jsonPointers:
+    - /status
+    - /metadata/finalizers
+    - /metadata/generation
+    - /metadata/resourceVersion
+    - /metadata/uid
+    - /metadata/managedFields
+  - group: apiextensions.crossplane.io
+    kind: CompositeResourceDefinition
+    jsonPointers:
+    - /status
+    - /metadata/finalizers
+    - /metadata/generation
+    - /metadata/resourceVersion
+    - /metadata/uid
+    - /metadata/managedFields
+  - group: secretmanager.gcp.upbound.io
+    kind: Secret
+    jsonPointers:
+    - /status
+    - /metadata/finalizers
+    - /metadata/generation
+    - /metadata/resourceVersion
+    - /metadata/uid
+    - /metadata/managedFields
+  - group: secretmanager.gcp.upbound.io
+    kind: SecretVersion
+    jsonPointers:
+    - /status
+    - /metadata/finalizers
+    - /metadata/generation
+    - /metadata/resourceVersion
+    - /metadata/uid
+    - /metadata/managedFields

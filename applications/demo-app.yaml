@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: demo-app
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"  # Deploy claims after infrastructure
 spec:
   project: default
   source:
@@ -18,30 +20,39 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - ServerSideApply=true
     - RespectIgnoreDifferences=true
     - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
   ignoreDifferences:
   - group: demo.io
     kind: CloudRunApp
-    jqPathExpressions:
-    - .status
-    - .metadata.finalizers
-    - .metadata.generation
-    - .metadata.resourceVersion
-    - .metadata.uid
-    - .metadata.managedFields
-    - .spec.resourceRef
-    - .spec.compositionRevisionRef
-    - .spec.writeConnectionSecretToRef
+    jsonPointers:
+    - /status
+    - /metadata/finalizers
+    - /metadata/generation
+    - /metadata/resourceVersion
+    - /metadata/uid
+    - /metadata/managedFields
+    - /spec/resourceRef
+    - /spec/compositionRevisionRef
+    - /spec/compositionUpdatePolicy
+    - /spec/writeConnectionSecretToRef
   - group: demo.io  
     kind: PostgreSQL
-    jqPathExpressions:
-    - .status
-    - .metadata.finalizers
-    - .metadata.generation
-    - .metadata.resourceVersion
-    - .metadata.uid
-    - .metadata.managedFields
-    - .spec.resourceRef
-    - .spec.compositionRevisionRef
-    - .spec.writeConnectionSecretToRef
+    jsonPointers:
+    - /status
+    - /metadata/finalizers
+    - /metadata/generation
+    - /metadata/resourceVersion
+    - /metadata/uid
+    - /metadata/managedFields
+    - /spec/resourceRef
+    - /spec/compositionRevisionRef
+    - /spec/compositionUpdatePolicy
+    - /spec/writeConnectionSecretToRef
