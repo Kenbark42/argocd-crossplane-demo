@@ -1,0 +1,95 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: postgres-with-secrets
+  labels:
+    provider: gcp
+    service: cloudsql
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: demo.io/v1alpha1
+    kind: XPostgreSQL
+  resources:
+  # Cloud SQL Instance
+  - name: cloudsql-instance
+    base:
+      apiVersion: database.gcp.crossplane.io/v1beta1
+      kind: CloudSQLInstance
+      spec:
+        forProvider:
+          databaseVersion: POSTGRES_13
+          region: us-central1
+          settings:
+            tier: db-f1-micro
+            availabilityType: ZONAL
+            dataDiskSizeGb: 20
+            dataDiskType: PD_SSD
+            backupConfiguration:
+              enabled: true
+              pointInTimeRecoveryEnabled: true
+            ipConfiguration:
+              authorizedNetworks:
+                - value: "0.0.0.0/0"
+              ipv4Enabled: true
+        writeConnectionSecretsToRef:
+          namespace: crossplane-system
+    patches:
+    - fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+    - fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+    - fromFieldPath: spec.parameters.size
+      toFieldPath: spec.forProvider.settings.tier
+      transforms:
+      - type: map
+        map:
+          small: db-f1-micro
+          medium: db-n1-standard-1
+          large: db-n1-standard-2
+    connectionDetails:
+    - fromConnectionSecretKey: endpoint
+    - fromConnectionSecretKey: port
+    - fromConnectionSecretKey: username
+    - fromConnectionSecretKey: password
+  
+  # GCP Secret for Database URL
+  - name: database-secret
+    base:
+      apiVersion: secretmanager.gcp.upbound.io/v1beta1
+      kind: Secret
+      spec:
+        forProvider:
+          secretId: postgres-connection
+          replication:
+            automatic: true
+        providerConfigRef:
+          name: secretmanager-config
+    patches:
+    - fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.secretId
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-postgres-connection"
+    
+  # Secret Version with Database URL
+  - name: database-secret-version
+    base:
+      apiVersion: secretmanager.gcp.upbound.io/v1beta1
+      kind: SecretVersion
+      spec:
+        forProvider:
+          secretData: "postgresql://demo-user:demo-password@localhost:5432/demo-database"
+          secretSelector:
+            matchLabels:
+              secret: postgres-connection
+        providerConfigRef:
+          name: secretmanager-config
+    patches:
+    - fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.secretSelector.matchLabels.secret
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-postgres-connection"
