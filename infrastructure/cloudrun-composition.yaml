@@ -36,6 +36,8 @@ spec:
                   value: darkfoo42
                 - name: NODE_ENV
                   value: production
+          annotations:
+            run.googleapis.com/cloudsql-instances: darkfoo42:us-central1:demo-postgres-frbhv
                 resources:
                 - limits:
                     cpu: "1000m"
