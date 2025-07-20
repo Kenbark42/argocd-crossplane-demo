@@ -8,8 +8,8 @@ metadata:
 spec:
   parameters:
     region: us-central1
-    image: gcr.io/darkfoo42/demo-app:v1.0.0
-    databaseUrl: "postgresql://demo-user:demo-password@34.66.46.85:5432/demo-database"
+    image: gcr.io/darkfoo42/demo-app:v2.0.0
+    dbSecretName: postgres-connection
   compositionRef:
     name: cloud-run-app
   writeConnectionSecretsToRef:

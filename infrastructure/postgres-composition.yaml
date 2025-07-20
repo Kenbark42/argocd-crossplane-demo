@@ -47,7 +47,15 @@ spec:
           medium: db-n1-standard-1
           large: db-n1-standard-2
     connectionDetails:
-    - fromConnectionSecretKey: endpoint
-    - fromConnectionSecretKey: port
-    - fromConnectionSecretKey: username
-    - fromConnectionSecretKey: password
+    - name: host
+      fromFieldPath: status.atProvider.ipAddresses[0].ipAddress
+    - name: port
+      value: "5432"
+    - name: database
+      value: "demo-database"
+    - name: username
+      value: "demo-user"
+    - name: password
+      value: "demo-password"
+    - name: connectionName
+      fromFieldPath: status.atProvider.connectionName
