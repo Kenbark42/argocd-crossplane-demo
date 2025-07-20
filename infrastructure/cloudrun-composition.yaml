@@ -28,9 +28,9 @@ spec:
           template:
           - metadata:
               annotations:
-                run.googleapis.com/cloudsql-instances: darkfoo42:us-central1:demo-postgres-frbhv
+                "run.googleapis.com/cloudsql-instances": "darkfoo42:us-central1:demo-postgres-frbhv"
             spec:
-            - containers:
+              containers:
               - image: gcr.io/cloudrun/hello
                 ports:
                 - containerPort: 8080
@@ -54,7 +54,7 @@ spec:
     - fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.location
     - fromFieldPath: spec.parameters.image
-      toFieldPath: spec.forProvider.template[0].spec[0].containers[0].image
+      toFieldPath: spec.forProvider.template[0].spec.containers[0].image
     connectionDetails:
     - fromConnectionSecretKey: url
 ---
