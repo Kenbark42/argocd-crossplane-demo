@@ -18,3 +18,30 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
+    - ApplyOutOfSyncOnly=true
+  ignoreDifferences:
+  - group: demo.io
+    kind: CloudRunApp
+    jqPathExpressions:
+    - .status
+    - .metadata.finalizers
+    - .metadata.generation
+    - .metadata.resourceVersion
+    - .metadata.uid
+    - .metadata.managedFields
+    - .spec.resourceRef
+    - .spec.compositionRevisionRef
+    - .spec.writeConnectionSecretToRef
+  - group: demo.io  
+    kind: PostgreSQL
+    jqPathExpressions:
+    - .status
+    - .metadata.finalizers
+    - .metadata.generation
+    - .metadata.resourceVersion
+    - .metadata.uid
+    - .metadata.managedFields
+    - .spec.resourceRef
+    - .spec.compositionRevisionRef
+    - .spec.writeConnectionSecretToRef

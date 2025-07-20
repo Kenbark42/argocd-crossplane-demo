@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Enable annotation-based resource tracking (better for Crossplane)
+  application.resourceTrackingMethod: annotation
+  
+  # Resource exclusions for Crossplane-managed resources
+  resource.exclusions: |
+    - apiGroups:
+      - "*"
+      kinds:
+      - ProviderConfigUsage
+      clusters:
+      - "*"
+    - apiGroups:
+      - "*"
+      kinds:
+      - "X*"
+      clusters:
+      - "*"
+    - apiGroups:
+      - pkg.crossplane.io
+      kinds:
+      - Lock
+      clusters:
+      - "*"
+  
+  # Custom health checks for Crossplane resources
+  resource.customizations.health.demo.io_CloudRunApp: |
+    hs = {}
+    if obj.status ~= nil then
+      if obj.status.conditions ~= nil then
+        for i, condition in ipairs(obj.status.conditions) do
+          if condition.type == "Ready" and condition.status == "True" then
+            hs.status = "Healthy"
+            hs.message = "CloudRunApp is ready"
+            return hs
+          end
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for CloudRunApp to be ready"
+    return hs
+
+  resource.customizations.health.demo.io_PostgreSQL: |
+    hs = {}
+    if obj.status ~= nil then
+      if obj.status.conditions ~= nil then
+        for i, condition in ipairs(obj.status.conditions) do
+          if condition.type == "Ready" and condition.status == "True" then
+            hs.status = "Healthy"
+            hs.message = "PostgreSQL is ready"
+            return hs
+          end
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for PostgreSQL to be ready"
+    return hs
+
+  # Ignore differences in Crossplane-managed fields
+  resource.customizations.ignoreDifferences.demo.io_CloudRunApp: |
+    ignoreDifferences:
+    - group: demo.io
+      kind: CloudRunApp
+      jsonPointers:
+      - /status
+      - /metadata/finalizers
+      - /metadata/generation
+      - /metadata/resourceVersion
+      - /metadata/managedFields
+      - /spec/resourceRef
+      - /spec/compositionRevisionRef
+
+  resource.customizations.ignoreDifferences.demo.io_PostgreSQL: |
+    ignoreDifferences:
+    - group: demo.io
+      kind: PostgreSQL
+      jsonPointers:
+      - /status
+      - /metadata/finalizers
+      - /metadata/generation
+      - /metadata/resourceVersion
+      - /metadata/managedFields
+      - /spec/resourceRef
+      - /spec/compositionRevisionRef
