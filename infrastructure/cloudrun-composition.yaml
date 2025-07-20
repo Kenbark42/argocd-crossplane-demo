@@ -1,3 +1,10 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-cloudrun
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-cloudrun:v1.12.0
+---
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
@@ -13,14 +20,14 @@ spec:
   resources:
   - name: cloud-run-service
     base:
-      apiVersion: cloudrun.gcp.crossplane.io/v1alpha1
+      apiVersion: cloudrun.gcp.upbound.io/v1beta1
       kind: Service
       spec:
         forProvider:
           location: us-central1
           template:
-            spec:
-              containers:
+          - spec:
+            - containers:
               - image: gcr.io/cloudrun/hello
                 ports:
                 - containerPort: 8080
@@ -28,7 +35,7 @@ spec:
                 - name: DATABASE_URL
                   value: "postgresql://username:password@host:5432/database"
                 resources:
-                  limits:
+                - limits:
                     cpu: "1000m"
                     memory: "512Mi"
           traffic:
@@ -42,9 +49,9 @@ spec:
     - fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.location
     - fromFieldPath: spec.parameters.image
-      toFieldPath: spec.forProvider.template.spec.containers[0].image
+      toFieldPath: spec.forProvider.template[0].spec[0].containers[0].image
     - fromFieldPath: spec.parameters.databaseUrl
-      toFieldPath: spec.forProvider.template.spec.containers[0].env[0].value
+      toFieldPath: spec.forProvider.template[0].spec[0].containers[0].env[0].value
     connectionDetails:
     - fromConnectionSecretKey: url
 ---
