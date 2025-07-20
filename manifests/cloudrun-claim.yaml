@@ -6,8 +6,8 @@ metadata:
 spec:
   parameters:
     region: us-central1
-    image: gcr.io/cloudrun/hello  # Temporary - will be updated with actual image
-    databaseUrl: "postgresql://username:password@localhost:5432/demo-database"
+    image: gcr.io/darkfoo42/demo-app:v1.0.0
+    databaseUrl: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_ENDPOINT):5432/demo-database"
   compositionRef:
     name: cloud-run-app
   writeConnectionSecretsToRef:
