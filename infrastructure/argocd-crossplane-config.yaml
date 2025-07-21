@@ -18,6 +18,13 @@ data:
       - ProviderConfigUsage
       clusters:
       - "*"
+    - apiGroups:
+      - demo.io
+      kinds:
+      - XCloudRunApp
+      - XPostgreSQL
+      clusters:
+      - "*"
   
   # Comprehensive health checks for Crossplane resources
   resource.customizations: |
