@@ -8,7 +8,7 @@ metadata:
 spec:
   parameters:
     region: us-central1
-    image: gcr.io/darkfoo42/demo-app:v5.0.0
+    image: gcr.io/darkfoo42/demo-app:v5.1.0
     dbSecretName: postgres-connection
   compositionRef:
     name: cloud-run-app
