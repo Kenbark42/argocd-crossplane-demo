@@ -20,7 +20,7 @@ spec:
   resources:
   - name: cloud-run-service
     base:
-      apiVersion: cloudrun.gcp.upbound.io/v1beta1
+      apiVersion: cloudrun.gcp.upbound.io/v1beta2
       kind: Service
       spec:
         forProvider:
