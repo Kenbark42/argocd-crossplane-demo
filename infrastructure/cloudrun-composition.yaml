@@ -57,6 +57,26 @@ spec:
       toFieldPath: spec.forProvider.template.spec.containers[0].image
     connectionDetails:
     - fromConnectionSecretKey: url
+  - name: cloud-run-iam
+    base:
+      apiVersion: cloudrun.gcp.upbound.io/v1beta2
+      kind: ServiceIAMMember
+      spec:
+        forProvider:
+          location: us-central1
+          member: allUsers
+          role: roles/run.invoker
+    patches:
+    - fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-public-access"
+    - fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.service
+    - fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.location
 ---
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
