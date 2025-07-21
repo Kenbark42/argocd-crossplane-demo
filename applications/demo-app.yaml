@@ -43,6 +43,7 @@ spec:
     - /spec/compositionRevisionRef
     - /spec/compositionUpdatePolicy
     - /spec/writeConnectionSecretToRef
+    - /spec/writeConnectionSecretsToRef
   - group: demo.io  
     kind: PostgreSQL
     jsonPointers:
@@ -56,3 +57,4 @@ spec:
     - /spec/compositionRevisionRef
     - /spec/compositionUpdatePolicy
     - /spec/writeConnectionSecretToRef
+    - /spec/writeConnectionSecretsToRef
