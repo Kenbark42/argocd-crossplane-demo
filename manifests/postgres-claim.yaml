@@ -12,3 +12,4 @@ spec:
     name: postgres-db
   writeConnectionSecretToRef:
     name: postgres-connection
+    namespace: demo
