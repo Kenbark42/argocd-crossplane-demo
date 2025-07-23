@@ -46,6 +46,7 @@ data:
         
         local has_no_status = {
           "Composition",
+          "CompositeResourceDefinition",
           "CompositionRevision", 
           "DeploymentRuntimeConfig",
           "ControllerConfig",
@@ -107,6 +108,40 @@ data:
           "ProviderConfig",
           "ProviderConfigUsage"
         }
+        
+        -- Special handling for Provider resources
+        if obj.kind == "Provider" then
+          if obj.status and obj.status.conditions then
+            for i, condition in ipairs(obj.status.conditions) do
+              if condition.type == "Healthy" and condition.status == "True" then
+                health_status.status = "Healthy"
+                health_status.message = "Provider is healthy and ready"
+                return health_status
+              elseif condition.type == "Installed" and condition.status == "True" then
+                -- If installed but not yet marked healthy, still progressing
+                health_status.status = "Progressing"
+                health_status.message = "Provider installed, waiting for healthy status"
+                return health_status
+              end
+            end
+          end
+        end
+        
+        -- Special handling for SecretVersion resources
+        if obj.kind == "SecretVersion" then
+          if obj.status and obj.status.conditions then
+            for i, condition in ipairs(obj.status.conditions) do
+              if condition.type == "Synced" and condition.status == "False" then
+                -- If synced is false with permission error, mark as degraded
+                if condition.message and string.find(condition.message, "Permission") then
+                  health_status.status = "Degraded"
+                  health_status.message = "Permission denied accessing secret version"
+                  return health_status
+                end
+              end
+            end
+          end
+        end
         
         if obj.status == nil or next(obj.status) == nil and contains(has_no_status, obj.kind) then
           health_status.status = "Healthy"
